@@ -7,6 +7,8 @@
 
 #ifndef ROLLINGBUFFER_H_
 #define ROLLINGBUFFER_H_
+
+#include "Driver/Buffer.h"
 template<typename TRollingBuffer> class RollingBuffer;
 
 template<typename TRollingBuffer>

@@ -1,4 +1,9 @@
 
+#ifndef __UART_H
+#define __UART_H
+
+
+
 #include "stm32f4xx_hal.h"
 
 #include "objet.h"
@@ -6,9 +11,6 @@
 #include "interrupt.h"
 #include "Buffer.h"
 #include "RollingBuffer.h"
-
-#ifndef __UART_H
-#define __UART_H
 
 
 
@@ -53,7 +55,7 @@ public :
 	bool GetStateRev(){return recvdata;};
 
 	void SendRecvdata();
-	virtual void CallbackInteruption(UART_HandleTypeDef *UartHandle);
+	virtual void CallbackInteruption(void *UartHandle);
 
 	HAL_UART_StateTypeDef GetState();
 

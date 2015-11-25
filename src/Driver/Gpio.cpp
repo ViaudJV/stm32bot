@@ -2,8 +2,9 @@
 
 
 
-#include "objet.h"
-#include "Gpio.h"
+#include "Driver/objet.h"
+#include "stm32f4xx_hal_gpio.h"
+#include "Driver/Gpio.h"
 
 Gpio::Gpio()
 {
@@ -78,7 +79,7 @@ bool Gpio::WriteBit(GPIO_PinState BitVal)
 	return false;
 }
 
-void Gpio::CallbackInteruption(uint8_t NVIC_IRQChannel)
+void Gpio::CallbackInteruption(void * handler)
 {
 	while(true);
 }

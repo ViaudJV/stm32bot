@@ -1,10 +1,6 @@
-#include "stm32f4xx.h"
-#include "stm32f4xx_hal_cortex.h"
-#include "objet.h"
-#include "Gpio.h"
-#include "Usart.h"
-
-#include "interrupt.h"
+#include "Driver/Gpio.h"
+#include "Driver/Usart.h"
+#include "Driver/interrupt.h"
 
 
 
@@ -126,6 +122,21 @@ bool interruption::SetObjetIT(uint32_t NVIC_IRQChannel,uint32_t NVIC_IRQChannelP
 		m_ptimer12 = pobjet;
 
 	}
+	else if( SPI1_IRQn == NVIC_IRQChannel)
+	{
+		m_pSPI1 = pobjet;
+
+	}
+	else if( SPI2_IRQn == NVIC_IRQChannel)
+	{
+		m_pSPI2 = pobjet;
+
+	}
+	else if( SPI3_IRQn == NVIC_IRQChannel)
+	{
+		m_pSPI3 = pobjet;
+
+	}
 	  HAL_NVIC_SetPriority((IRQn_Type)NVIC_IRQChannel, NVIC_IRQChannelPreemptionPriority, NVIC_IRQChannelSubPriority);
 	return true;
 
@@ -141,6 +152,37 @@ bool interruption::DesactiveIT(IRQn_Type NVIC_IRQChannel)
 	HAL_NVIC_DisableIRQ(NVIC_IRQChannel);
 	return true;
 }
+void interruption::CallbackInteruption(SPI_HandleTypeDef *SPIHandle)
+{
+	if( 0 == SPIHandle)
+	{
+		return ;
+	}
+
+	if( SPI1 == (SPIHandle->Instance) )
+	{
+		if(m_pSPI1 != 0)
+		{
+			m_pSPI1->CallbackInteruption( SPIHandle);
+		}
+	}
+	if( SPI2 == (SPIHandle->Instance) )
+	{
+		if(m_pSPI2 != 0)
+		{
+			m_pSPI2->CallbackInteruption( SPIHandle);
+		}
+	}
+	if( SPI3 == (SPIHandle->Instance) )
+	{
+		if(m_pSPI3 != 0)
+		{
+			m_pSPI3->CallbackInteruption( SPIHandle);
+		}
+	}
+}
+
+
 
 void interruption::CallbackInteruption(TIM_HandleTypeDef *TimeHandle)
 {
@@ -149,7 +191,7 @@ void interruption::CallbackInteruption(TIM_HandleTypeDef *TimeHandle)
 
 	if( TIM1 == (TimeHandle->Instance) )
 	{
-		if(m_ptimer12 != 0)
+		if(m_ptimer1 != 0)
 		{
 			m_ptimer1->CallbackInteruption( TimeHandle);
 		}

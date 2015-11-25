@@ -33,5 +33,8 @@ system/src/newlib \
 system/src/diag \
 system/src/cortexm \
 system/src/cmsis \
+src/math \
 src \
+src/Robot \
+src/Driver \
 

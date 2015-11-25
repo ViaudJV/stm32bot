@@ -1,6 +1,6 @@
 
 
-#include "Uart.h"
+#include "Driver/Uart.h"
 
 
 
@@ -141,7 +141,7 @@ void Uart::ActiveInteruption(FunctionalState NewState )
 
 }
 
-void Uart::CallbackInteruption(UART_HandleTypeDef *UartHandle)
+void Uart::CallbackInteruption(void *UartHandle)
 {
 	if( 0 == UartHandle)
 	{

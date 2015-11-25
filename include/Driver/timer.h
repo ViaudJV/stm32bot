@@ -3,6 +3,7 @@
 #include "stm32f4xx_hal_tim.h"
 //#include "misc.h"
 #include "objet.h"
+#include "interrupt.h"
 #ifndef __TIMER_H
 #define __TIMER_H
 
@@ -10,14 +11,14 @@
 
 class timer : public objet
 {
-private:
+protected:
 	interruption *			m_ITSuperviseur;
 	bool 					m_init;
 	IRQn_Type 				m_NVIC_IRQChannel;
 	TIM_HandleTypeDef		m_TIM_THandleStructure;
 public :
 	timer();
-	timer(TIM_TypeDef* TIMERx,uint32_t TIM_Prescaler ,uint32_t TIM_CounterMode, uint32_t TIM_Period, uint32_t TIM_ClockDivision,uint32_t TIM_RepetitionCounter);
+	timer(TIM_TypeDef* TIMERx,uint32_t TIM_Prescaler ,uint32_t TIM_CounterMode, uint32_t TIM_Period, uint32_t TIM_ClockDivision,uint32_t TIM_RepetitionCounter, HAL_TIM_ActiveChannel Channel);
 	~timer(){};
 	void SetTimer(TIM_TypeDef* TIMERx,uint16_t TIM_Prescaler ,uint16_t TIM_CounterMode, uint32_t TIM_Period, uint16_t TIM_ClockDivision,uint8_t TIM_RepetitionCounter );
 	bool Init();

@@ -1,3 +1,11 @@
+#include "stm32f4xx.h"
+#include "stm32f4xx_hal_cortex.h"
+
+
+#include "Driver/objet.h"
+
+
+
 
 
 
@@ -31,7 +39,9 @@ private:
 	objet * m_ptimer13;
 	objet * m_ptimer14;
 
-
+	objet * m_pSPI1;
+	objet * m_pSPI2;
+	objet * m_pSPI3;
 public:
 
 	interruption();
@@ -42,6 +52,7 @@ public:
 
 	void CallbackInteruption(UART_HandleTypeDef *UartHandle);
 	void CallbackInteruption(TIM_HandleTypeDef *TimeHandle);
+	void CallbackInteruption(SPI_HandleTypeDef *SPIHandle);
 };
 
 

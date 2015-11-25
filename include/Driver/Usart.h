@@ -24,7 +24,7 @@ protected:
 
 public :
 	Usart();
-	virtual ~Usart(){};
+	 ~Usart(){};
 	Usart(USART_TypeDef *USART_Typedef,uint32_t USART_BaudRate ,uint32_t USART_CLKLastBit ,uint32_t USART_CLKPhase, uint32_t USART_CLKPolarity,uint32_t USART_Mode, uint32_t USART_Parity  ,uint32_t USART_StopBits, uint32_t USART_WordLength);
 	bool SetUsart(USART_TypeDef *USART_Typedef,uint32_t USART_BaudRate ,uint32_t USART_CLKLastBit ,uint32_t USART_CLKPhase, uint32_t USART_CLKPolarity,uint32_t USART_Mode, uint32_t USART_Parity  ,uint32_t USART_StopBits, uint32_t USART_WordLength,uint8_t GPIO_AFX,uint32_t Usart_Base);
 	bool Init();

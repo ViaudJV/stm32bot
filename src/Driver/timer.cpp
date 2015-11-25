@@ -1,13 +1,13 @@
-#include "objet.h"
-#include "interrupt.h"
-#include "timer.h"
+#include "Driver/objet.h"
+#include "Driver/interrupt.h"
+#include "Driver/timer.h"
 
 
 timer::timer()
 {
 
 }
-timer::timer(TIM_TypeDef* TIMERx,uint32_t TIM_Prescaler ,uint32_t TIM_CounterMode, uint32_t TIM_Period, uint32_t TIM_ClockDivision,uint32_t TIM_RepetitionCounter )
+timer::timer(TIM_TypeDef* TIMERx,uint32_t TIM_Prescaler ,uint32_t TIM_CounterMode, uint32_t TIM_Period, uint32_t TIM_ClockDivision,uint32_t TIM_RepetitionCounter, HAL_TIM_ActiveChannel Channel)
 {
 
 

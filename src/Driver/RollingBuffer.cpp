@@ -4,9 +4,9 @@
  *  Created on: 19 juil. 2015
  *      Author: jul
  */
-#include "Buffer.h"
+#include "Driver/Buffer.h"
 #include <stdlib.h>
-#include "RollingBuffer.h"
+#include "Driver/RollingBuffer.h"
 
 template<typename TRollingBuffer>
 RollingBuffer<TRollingBuffer>::RollingBuffer() {
