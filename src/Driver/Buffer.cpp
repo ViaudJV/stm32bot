@@ -22,7 +22,7 @@ Buffer<TBuffer>::~Buffer() {
 }
 
 template<typename TBuffer>
-Buffer<TBuffer>::Buffer (unsigned int Taille)
+Buffer<TBuffer>::Buffer (uint32_t Taille)
 {
 	m_Taille = 0;
 	m_pData = new TBuffer[Taille];

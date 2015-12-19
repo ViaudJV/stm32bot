@@ -15,14 +15,14 @@ template<typename TRollingBuffer>
 class RollingBuffer {
 private:
 	Buffer<TRollingBuffer> ** m_pBuffer;
-	unsigned int m_PosBegin;
-	unsigned int  m_PosEnd;
-	unsigned int m_NbElementpris;
-	unsigned int m_NbElement;
+	uint32_t m_PosBegin;
+	uint32_t  m_PosEnd;
+	uint32_t m_NbElementpris;
+	uint32_t m_NbElement;
 
 public:
 	RollingBuffer();
-	RollingBuffer(unsigned int NbElement, unsigned int Taille);
+	RollingBuffer(uint32_t NbElement, uint32_t Taille);
 	virtual ~RollingBuffer();
 
 	Buffer<TRollingBuffer> * GetNextfreeBuffer();

@@ -7,19 +7,24 @@
 
 #ifndef BUFFER_H_
 #define BUFFER_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+
+
 template<typename TBuffer> class Buffer;
 
 template<typename TBuffer>
 class Buffer
 {
 	TBuffer * 			m_pData;
-	unsigned int		m_Taille;
+	uint32_t		m_Taille;
 public:
 
 	Buffer();
-	Buffer(unsigned int Taille);
+	Buffer(uint32_t Taille);
 	TBuffer * 	 GetBuffer();
-	unsigned int GetTaille(){return m_Taille;};
+	uint32_t GetTaille(){return m_Taille;};
 	virtual ~Buffer();
 };
 

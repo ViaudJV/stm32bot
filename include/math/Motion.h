@@ -5,14 +5,16 @@
  *      Author: jul
  */
 #include "Driver/timer.h"
-#include "Driver/Gpio.h"
-#include "Driver/Spi.h"
-#include "Driver/LIS3DSH.h"
-#include "math/VectPlan.h"
 #include "math/PID.h"
+#include "math/Location.h"
 #ifndef POSITION_H_
 #define POSITION_H_
+typedef enum
+{
+	MOTION_STATUS_IDLE = 0,
+	MOTION_STATUS_MOVING = 1,
 
+}MotionStatus;
 typedef enum
 {
 	MI_Rotation = 0,
@@ -20,28 +22,23 @@ typedef enum
 } ModeIntegration ;
 
 
-class Motion {
+class Motion : public timer
+{
 private:
-	timer * m_Timer ;	//Timer utilisé d'échantillionnage
-	LIS3DSH * m_mems;	//LIS3DSH
-	uint32_t m_T;		//temps d'échantillionnage
-
-
-	uint32_t m_W0; 		//Vitesse de rotation du dernier échantillion
-	uint32_t m_V0; 		//Vitesse de translation échantillion
-
-	uint32_t m_d;			//Distance en mm du centre de rotation
+	timer * m_ptimer ;	//Timer utilisé pour la correction PID
+	uint32_t m_tPid;		//temps d'échantillionnage
 	ModeIntegration m_mode;
-
-
-	VectPlan m_Position;
-
+	MotionStatus m_Status;
+	Location * m_plocation;
 	float m_mouv;
-
+	bool m_bInPosition;
 	PID m_pidRotation;
 	PID m_pidlineare;
+
+	VectPlan m_Dest;
+
 public:
-	Motion(LIS3DSH * mems,timer * Timer,ModeIntegration mode,float d){m_mems = mems; m_Timer = Timer;m_mode = mode;m_d = d;m_Position.theta = 0; m_Position.x = 0; m_Position.y = 0;} ;
+
 	Motion() ;
 	PID pidRotation;
 	PID pidlineare;
@@ -51,7 +48,6 @@ public:
 	void InitPosition();
 	void SetPosition(float theta , float x, float y);
 	void Setmode(ModeIntegration newmode){m_mode = newmode;};
-	uint32_t Calculdelta();
 	uint32_t SetPidRotation(float kp,float kd, float ki, float MAxIntegral,float Max);
 	uint32_t SetPidLineaire(float kp,float kd, float ki, float MAxIntegral,float Max);
 	void callback();

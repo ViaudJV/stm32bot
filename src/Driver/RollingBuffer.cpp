@@ -5,6 +5,7 @@
  *      Author: jul
  */
 #include "Driver/Buffer.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include "Driver/RollingBuffer.h"
 
@@ -19,7 +20,7 @@ RollingBuffer<TRollingBuffer>::RollingBuffer() {
 }
 
 template<typename TRollingBuffer>
-RollingBuffer<TRollingBuffer>::RollingBuffer(unsigned int NbElement, unsigned int Taille) {
+RollingBuffer<TRollingBuffer>::RollingBuffer(uint32_t NbElement, uint32_t Taille) {
 	// TODO Auto-generated constructor stub
 	m_NbElementpris = 0;
 	m_NbElement = NbElement;
@@ -70,7 +71,7 @@ Buffer<TRollingBuffer> * RollingBuffer<TRollingBuffer>::GetNextfreeBuffer()
 template<typename TRollingBuffer>
 RollingBuffer<TRollingBuffer>::~RollingBuffer()
 {
-//	for(unsigned int i = 0;  i < m_NbElement; i++ )
+//	for(uint32_t i = 0;  i < m_NbElement; i++ )
 //	{
 //		free(m_pBuffer[i]);
 //	}
