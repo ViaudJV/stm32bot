@@ -25,6 +25,7 @@ void Motion::callback()
 
 	VectPlan position = m_plocation->getLocation();
 	float cmd = 0;
+	float error = 0;
 
 	///On génère le PID
 	if(m_mode ==  MI_Rotation)
