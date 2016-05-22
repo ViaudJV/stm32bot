@@ -31,8 +31,13 @@ system/src/newlib \
 system/src/diag \
 system/src/cortexm \
 system/src/cmsis \
+system/include/cmsis \
 src/math \
 src \
 src/Robot \
 src/Driver \
+FreeRTOS/Source \
+FreeRTOS/Source/portable/MemMang \
+FreeRTOS/Source/portable/GCC/ARM_CM4F \
+FreeRTOS/Source/CMSIS_RTOS \
 

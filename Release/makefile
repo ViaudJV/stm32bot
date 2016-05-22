@@ -13,10 +13,15 @@ RM := rm -rf
 -include system/src/diag/subdir.mk
 -include system/src/cortexm/subdir.mk
 -include system/src/cmsis/subdir.mk
+-include system/include/cmsis/subdir.mk
 -include src/math/subdir.mk
 -include src/Robot/subdir.mk
 -include src/Driver/subdir.mk
 -include src/subdir.mk
+-include FreeRTOS/Source/portable/MemMang/subdir.mk
+-include FreeRTOS/Source/portable/GCC/ARM_CM4F/subdir.mk
+-include FreeRTOS/Source/CMSIS_RTOS/subdir.mk
+-include FreeRTOS/Source/subdir.mk
 -include subdir.mk
 -include objects.mk
 

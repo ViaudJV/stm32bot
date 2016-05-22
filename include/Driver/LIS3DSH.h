@@ -193,5 +193,9 @@ class LIS3DSH
 	void SetCTRLReg3(uint8_t DR_EN, uint8_t IEA, uint8_t IEL,uint8_t INT2_EN,uint8_t INT1_EN, uint8_t VFILT ,uint8_t STRT );
 	void SPI_LIS3DSH_send(uint8_t address, uint8_t data);
 	uint8_t SPI_LIS3DSH_read(uint8_t address);
+	int16_t GetXg();
+	int16_t GetYg();
+	int16_t GetZg();
+
 
 };

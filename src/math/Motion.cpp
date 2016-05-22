@@ -4,7 +4,6 @@
  *  Created on: 11 août 2015
  *      Author: jul
  */
-#include "Seconde.h"
 #include "math/Motion.h"
 
 Motion::~Motion() {
@@ -54,7 +53,7 @@ bool Motion::Movedistance(float d)
 		m_bInPosition = false;
 		while(!m_bInPosition)
 		{
-			Seconde::sleep(100);
+
 				m_bInPosition = true;
 		}
 		m_Status = MOTION_STATUS_IDLE;
@@ -78,7 +77,7 @@ bool Motion::Rotate(float theta)
 
 		while(!m_bInPosition)
 		{
-			Seconde::sleep(100);
+
 
 			m_bInPosition =  true;
 		}

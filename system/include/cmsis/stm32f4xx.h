@@ -139,7 +139,7 @@
 #elif defined(STM32F429xx)
   #include "stm32f429xx.h"
 #elif defined(STM32F439xx)
-  #include "stm32f439xx.h"
+//  #include "stm32f439xx.h"
 #elif defined(STM32F401xC)
   #include "stm32f401xc.h"
 #elif defined(STM32F401xE)

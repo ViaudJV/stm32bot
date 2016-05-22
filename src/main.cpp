@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include "diag/Trace.h"
 #include "Driver/PWM.h"
-#include "Seconde.h"
 #include "Driver/Gpio.h"
 #include "Driver/Usart.h"
 #include "Driver/Uart.h"
@@ -17,6 +16,13 @@
 #include "Driver/Spi.h"
 #include "Driver/LIS3DSH.h"
 #include "math.h"
+#include "../FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h"
+#include "stm32f4xx_hal_rcc.h"
+
+#include "cortexm/ExceptionHandlers.h"
+///* Private variables ---------------------------------------------------------*/
+osThreadId firstTaskHandle;
+osThreadId secondTaskHandle;
 // ----------------------------------------------------------------------------
 //
 // Standalone STM32F4 led blink sample (trace via DEBUG).
@@ -43,7 +49,6 @@
 
 
 uint8_t i;
-uint8_t MSB, LSB;
 int16_t Xg, Zg;                                 // 16-bit values from accelerometer
 int16_t x_array[100];                           // 100 samples for X-axis
 int16_t z_array[100];                           // 100 samples for Z-axis
@@ -51,6 +56,23 @@ float x_average;                                // x average of samples
 float z_average;                                // z average of samples
 float zx_theta;                                 // degrees between Z and X planes
 char print_buffer[20];                          // printing the values in Putty
+
+
+
+//GPIO de LED
+  Gpio Ledgreen(GPIOD,GPIO_PIN_12,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
+  Gpio Ledorange(GPIOD,GPIO_PIN_13,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
+  Gpio Ledred(GPIOD,GPIO_PIN_14,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
+  Gpio Ledblue(GPIOD,GPIO_PIN_15,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
+
+  interruption SuperIT;
+  //Usart Usart6(USART6,(uint32_t) 9600,USART_LASTBIT_DISABLE,USART_PHASE_1EDGE,USART_POLARITY_LOW,USART_MODE_TX_RX,USART_PARITY_NONE, USART_STOPBITS_1, USART_WORDLENGTH_8B);
+  Uart Uart4(UART4,(uint32_t) 9600,UART_MODE_TX_RX,UART_PARITY_NONE, UART_STOPBITS_1, UART_WORDLENGTH_8B,UART_HWCONTROL_NONE,UART_OVERSAMPLING_8);
+  // Pramétrage du Timer
+  timer Timer2(TIM2,42000 - 1,TIM_COUNTERMODE_UP,1000 - 1,TIM_CLOCKDIVISION_DIV1,0,HAL_TIM_ACTIVE_CHANNEL_CLEARED);
+
+
+  uint32_t Duty;
 
 extern "C"
 {
@@ -60,16 +82,6 @@ float  gToDegrees(float V, float H);             // output: degrees between two 
 }
 
 
-// Definitions visible only within this translation unit.
-namespace
-{
-  // ----- Timing definitions -------------------------------------------------
-
-  // Keep the LED on for 2/3 of a second.
-  constexpr Seconde::ticks_t BLINK_ON_TICKS = Seconde::FREQUENCY_HZ * 2 / 3;
-  constexpr Seconde::ticks_t BLINK_OFF_TICKS = Seconde::FREQUENCY_HZ
-      - BLINK_ON_TICKS;
-}
 
 // ----- main() ---------------------------------------------------------------
 
@@ -80,17 +92,10 @@ namespace
 #pragma GCC diagnostic ignored "-Wmissing-declarations"
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
-interruption SuperIT;
-//Usart Usart6(USART6,(uint32_t) 9600,USART_LASTBIT_DISABLE,USART_PHASE_1EDGE,USART_POLARITY_LOW,USART_MODE_TX_RX,USART_PARITY_NONE, USART_STOPBITS_1, USART_WORDLENGTH_8B);
-Uart Uart4(UART4,(uint32_t) 9600,UART_MODE_TX_RX,UART_PARITY_NONE, UART_STOPBITS_1, UART_WORDLENGTH_8B,UART_HWCONTROL_NONE,UART_OVERSAMPLING_8);
-// Pramétrage du Timer
-timer Timer2(TIM2,42000 - 1,TIM_COUNTERMODE_UP,1000 - 1,TIM_CLOCKDIVISION_DIV1,0,HAL_TIM_ACTIVE_CHANNEL_CLEARED);
-PWM PWMBlue(TIM4,42000 - 1,TIM_COUNTERMODE_UP,1000 - 1,TIM_CLOCKDIVISION_DIV1,0,HAL_TIM_ACTIVE_CHANNEL_4);
-Gpio Ledred(GPIOD,GPIO_PIN_14,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
-Spi spi_LIS3DSH(SPI1,SPI_MODE_MASTER,SPI_DIRECTION_2LINES,SPI_DATASIZE_8BIT,SPI_POLARITY_HIGH,SPI_PHASE_2EDGE,SPI_NSS_SOFT|SPI_NSS_HARD_INPUT,SPI_BAUDRATEPRESCALER_256,SPI_FIRSTBIT_MSB,SPI_TIMODE_DISABLE,SPI_CRCCALCULATION_DISABLE,(uint32_t)0);
-LIS3DSH mems;
 
-uint32_t Duty;
+
+
+
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UsartHandle)
 {
@@ -99,14 +104,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UsartHandle)
 
 }
 
-void
-HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *
-htim)
-{
-	Ledred.Toggle();
-	SuperIT.CallbackInteruption(htim);
 
+
+void StartFirstTask(void const * argument)
+{
+	while(1)
+	{
+		Ledred.Toggle();
+		Ledblue.Toggle();
+		osDelay(1000);
+	}
 }
+
+
+void StartSecondTask(void const * argument)
+{
+	while(1)
+	{
+		Ledorange.Toggle();
+		Ledgreen.Toggle();
+		osDelay(2000);
+	}
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -120,9 +140,6 @@ int main(int argc, char* argv[])
   trace_printf("System clock: %uHz\n", SystemCoreClock);
 
 
-  Seconde timerSeconde;
-  timerSeconde.start();
-
 
 
   //Preparation de la CLock
@@ -130,17 +147,15 @@ int main(int argc, char* argv[])
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /* Enable USART1 clock */
   __UART4_CLK_ENABLE();
 
-  /* Enable SPI1 clock */
-  __SPI1_CLK_ENABLE();
-
 
   /* Enable TIMER clock */
   __TIM2_CLK_ENABLE();
-  __TIM4_CLK_ENABLE();
 
   //
 
@@ -151,9 +166,7 @@ int main(int argc, char* argv[])
   uint16_t size 	= 7;
 
 
-  //GPIO de LED
-  Gpio Ledgreen(GPIOD,GPIO_PIN_12,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
-  Gpio Ledorange(GPIOD,GPIO_PIN_13,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
+
 
 
   // Paramétrage de L'uart
@@ -162,135 +175,76 @@ int main(int argc, char* argv[])
   Uart4.SetGpio(&TX,&RX);
 
 
-  // Paramétrage du SPI pour LIS3DSH
-  Gpio SCK(GPIOA, GPIO_PIN_5,GPIO_MODE_AF_PP,GPIO_AF5_SPI1,GPIO_SPEED_FAST,GPIO_NOPULL);
-  Gpio MOSI(GPIOA, GPIO_PIN_7,GPIO_MODE_AF_PP,GPIO_AF5_SPI1,GPIO_SPEED_FAST,GPIO_NOPULL);
-  Gpio MISO(GPIOA, GPIO_PIN_6,GPIO_MODE_AF_PP,GPIO_AF5_SPI1,GPIO_SPEED_FAST,GPIO_NOPULL);
-  spi_LIS3DSH.SetGpio(&SCK,&MISO,&MOSI);
-
-  //Paramétrage du Cs du LIS3DSH
-  Gpio CSMems(GPIOE, GPIO_PIN_3,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_PULLUP);
-
-  mems.SetSPI(&spi_LIS3DSH);
-  mems.SetCS(&CSMems);
-  mems.init();
-
-  mems.SetCTRLReg3(1,1,0,0,1,0,1); 		// resetting the accelerometer internal circuit
-  mems.SetCTRLReg4(ODR_100HZ,0,0x7);	// 100Hz data update rate, block data update disable, x/y/z enabled
-  mems.SetCTRLReg5(BW_800_HZ,FSCALE_16G,ST_NORMAL,SIM_4);// Anti aliasing filter bandwidth 800Hz, 16G (very sensitive), no self-test, 4-wire interface
-  mems.SPI_LIS3DSH_send(0x10,0x00);		//OFF_X  // Output(X) = Measurement(X) - OFFSET(X) * 32;
-  mems.SPI_LIS3DSH_send(0x11,0x00);		//OFF_Y  // Output(Y) = Measurement(Y) - OFFSET(Y) * 32;
-  mems.SPI_LIS3DSH_send(0x12,0x00);		//OFF_Z  // Output(Z) = Measurement(Z) - OFFSET(Z) * 32;
-
-  //Paremétrage du PWM
-  Gpio Ledblue(GPIOD,GPIO_PIN_15,GPIO_MODE_AF_PP,GPIO_AF2_TIM4,GPIO_SPEED_HIGH,GPIO_NOPULL);
-  PWMBlue.SetGpio(&Ledblue);
-  PWMBlue.ConfigChannel(TIM_OCMODE_PWM1, Duty, TIM_OCPOLARITY_HIGH, TIM_OCNPOLARITY_HIGH,TIM_OCFAST_DISABLE ,TIM_CCx_ENABLE,TIM_OCNIDLESTATE_RESET,TIM_CHANNEL_4);
-
 
   // Perform all necessary initialisations
   Ledgreen.Init();
-//  Ledblue.Init();
-  PWMBlue.Init();
+  Ledblue.Init();
   Ledred.Init();
   Ledorange.Init();
+
   Uart4.Init();
-  Timer2.Init();
-  mems.init();
-
-
-
-
-
   Uart4.Active(ENABLE);
-  Timer2.Active(ENABLE);
-  PWMBlue.Active(ENABLE);
-
-
-
-  mems.SetCTRLReg3(1,1,0,0,1,0,1); 		// resetting the accelerometer internal circuit
-  mems.SetCTRLReg4(ODR_100HZ,0,0x7);	// 100Hz data update rate, block data update disable, x/y/z enabled
-  mems.SetCTRLReg5(BW_800_HZ,FSCALE_16G,ST_NORMAL,SIM_4);// Anti aliasing filter bandwidth 800Hz, 16G (very sensitive), no self-test, 4-wire interface
-  mems.SPI_LIS3DSH_send(0x10,0x00);		//OFF_X  // Output(X) = Measurement(X) - OFFSET(X) * 32;
-  mems.SPI_LIS3DSH_send(0x11,0x00);		//OFF_Y  // Output(Y) = Measurement(Y) - OFFSET(Y) * 32;
-  mems.SPI_LIS3DSH_send(0x12,0x00);		//OFF_Z  // Output(Z) = Measurement(Z) - OFFSET(Z) * 32;
-
-
-
-  //Preparation de L'IT
-  Timer2.InitInteruption(&SuperIT,TIM2_IRQn,0,1);
-  Timer2.ActiveInteruption(ENABLE);
 
   //Preparation de L'IT
   Uart4.InitInteruption(&SuperIT,UART4_IRQn,0,1);
   Uart4.ActiveInteruption(ENABLE);
 
   Ledred.WriteBit(GPIO_PIN_RESET);
+  Ledorange.WriteBit(GPIO_PIN_SET);
+  Ledgreen.WriteBit(GPIO_PIN_RESET);
+  Ledblue.WriteBit(GPIO_PIN_RESET);
+
 
   uint32_t seconds = 0;
 
-  // Infinite loop
-  while (1)
-    {
-	   for(i = 0; i < 100; i++)                   // getting 100 samples
-	    {
-	      MSB = mems.SPI_LIS3DSH_read(0x29);      // X-axis MSB
-	      LSB = mems.SPI_LIS3DSH_read(0x28);      // X-axis LSB
-	      Xg = (MSB << 8) | (LSB);                // Merging
-	      x_array[i] = Xg;
+  /* USER CODE BEGIN RTOS_MUTEX */
+   /* add mutexes, ... */
+   /* USER CODE END RTOS_MUTEX */
 
-	      MSB = mems.SPI_LIS3DSH_read(0x2d);      // Z-axis MSB
-	      LSB = mems.SPI_LIS3DSH_read(0x2c);      // Z-axis LSB
-	      Zg = (MSB << 8) | (LSB);                // Merging
-	      z_array[i] = Zg;
-	    }
+   /* USER CODE BEGIN RTOS_SEMAPHORES */
+   /* add semaphores, ... */
+   /* USER CODE END RTOS_SEMAPHORES */
 
-	    Sort_Signed(x_array, 100);                // Sorting min to max
-	    Sort_Signed(z_array, 100);                // Sorting min to ma0x
+   /* USER CODE BEGIN RTOS_TIMERS */
+   /* start timers, add new ones, ... */
+   /* USER CODE END RTOS_TIMERS */
 
-	    x_average = 0.0f;
-	    z_average = 0.0f;
-	    for(i = 10; i < 90; i++)                  // removing 10 samples from bottom and 10 from top
-	    {
-	      x_average += x_array[i];                // summing up
-	      z_average += z_array[i];                // summing up
-	    }
+   /* Create the thread(s) */
+   /* definition and creation of defaultTask */
+  osThreadDef(firstTask, StartFirstTask, osPriorityNormal, 1, 128);
+  firstTaskHandle = osThreadCreate(osThread(firstTask), NULL);
 
-	    x_average /= 80.0f;                          // dividing by the number of samples used
-	    x_average /= -141.0f;                        // converting to meters per second squared
+  osThreadDef(secondTask, StartSecondTask, osPriorityNormal, 1, 128);
+  secondTaskHandle = osThreadCreate(osThread(secondTask), NULL);
 
-	    z_average /= 80.0f;                          // dividing by the number of samples used
-	    z_average /= -141.0f;                        // converting to meters per second squared
+   /* USER CODE BEGIN RTOS_THREADS */
+   /* add threads, ... */
+   /* USER CODE END RTOS_THREADS */
 
-	    zx_theta = gToDegrees(z_average,x_average);  // getting the degrees between Z and X planes
-
-	    sprintf(print_buffer, "x: %f\tz: %f\tZ-X: %f", x_average, -z_average, zx_theta);
-	    Uart4.Send((uint8_t*)"a\n",2,99);
-	   Uart4.Send((uint8_t*)print_buffer,20,99);           // printing in Putty
-	 }
-	 // Ledorange.WriteBit(GPIO_PIN_SET);
-      //Ledblue.WriteBit(GPIO_PIN_SET);
-    //  Ledred.WriteBit(GPIO_PIN_SET);
-     // Ledgreen.WriteBit(GPIO_PIN_SET);
-      //envoie du message
-      //Uart4.Send(Message,size,999);
+   /* USER CODE BEGIN RTOS_QUEUES */
+   /* add queues, ... */
+   /* USER CODE END RTOS_QUEUES */
 
 
-     // timerSeconde.sleep(BLINK_ON_TICKS);
+   /* Start scheduler */
+   osKernelStart();
+
+   /* We should never get here as control is now taken by the scheduler */
+
+   /* Infinite loop */
+   /* USER CODE BEGIN WHILE */
+   while (1)
+   {
+   /* USER CODE END WHILE */
+	   Duty = 0;
+   /* USER CODE BEGIN 3 */
+
+   }
+   /* USER CODE END 3 */
+
+ }
 
 
-	  //Ledorange.WriteBit(GPIO_PIN_RESET);
-      //Ledblue.WriteBit(GPIO_PIN_RESET);
-    //  Ledred.WriteBit(GPIO_PIN_RESET);
-     // Ledgreen.WriteBit(GPIO_PIN_RESET);
-     // timerSeconde.sleep(BLINK_OFF_TICKS);
-     // ++seconds;
-
-      // Count seconds on the trace device.
-      trace_printf("Second %u\n", seconds);
-   //}
-  // Infinite loop, never return.
-}
 extern "C"
 {
 	void UART4_IRQHandler(void)
@@ -301,7 +255,6 @@ extern "C"
 		{
 			Duty = 10;
 		}
-		PWMBlue.UpdateDutyCycle(Duty);
 
 	}
 	void TIM2_IRQHandler(void)
@@ -356,6 +309,16 @@ float gToDegrees(float Vi, float Hi)               // refer to the orientation p
 
 }
 
+void SysTick_Handler(void)
+{
+  /* USER CODE BEGIN SysTick_IRQn 0 */
+
+  /* USER CODE END SysTick_IRQn 0 */
+  osSystickHandler();
+  /* USER CODE BEGIN SysTick_IRQn 1 */
+
+  /* USER CODE END SysTick_IRQn 1 */
+}
 
 
 #pragma GCC diagnostic pop

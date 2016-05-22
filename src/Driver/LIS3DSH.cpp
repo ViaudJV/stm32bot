@@ -99,3 +99,31 @@ uint8_t LIS3DSH::SPI_LIS3DSH_read(uint8_t address)
 
   return  data;
 }
+
+
+int16_t LIS3DSH::GetXg()
+{
+	uint8_t MSB, LSB;
+	MSB = SPI_LIS3DSH_read(OUT_X_H);      // X-axis MSB
+	LSB = SPI_LIS3DSH_read(OUT_X_L);      // X-axis LSB
+	return (MSB << 8) | (LSB);                // Merging
+
+}
+
+int16_t LIS3DSH::GetYg()
+{
+	uint8_t MSB, LSB;
+	MSB = SPI_LIS3DSH_read(OUT_Y_H);      // Y-axis MSB
+	LSB = SPI_LIS3DSH_read(OUT_Y_L);      // Y-axis LSB
+	return (MSB << 8) | (LSB);                // Merging
+
+}
+
+int16_t LIS3DSH::GetZg()
+{
+	uint8_t MSB, LSB;
+	MSB = SPI_LIS3DSH_read(OUT_Z_H);      // Z-axis MSB
+	LSB = SPI_LIS3DSH_read(OUT_Z_L);      // Z-axis LSB
+	return (MSB << 8) | (LSB);                // Merging
+
+}
