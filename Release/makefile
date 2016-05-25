@@ -16,6 +16,7 @@ RM := rm -rf
 -include system/include/cmsis/subdir.mk
 -include src/math/subdir.mk
 -include src/Robot/subdir.mk
+-include src/Middleware/subdir.mk
 -include src/Driver/subdir.mk
 -include src/subdir.mk
 -include FreeRTOS/Source/portable/MemMang/subdir.mk

@@ -17,6 +17,7 @@
 #include "Driver/LIS3DSH.h"
 #include "math.h"
 #include "../FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h"
+#include "ToggleLed.h"
 #include "stm32f4xx_hal_rcc.h"
 
 #include "cortexm/ExceptionHandlers.h"
@@ -64,7 +65,6 @@ char print_buffer[20];                          // printing the values in Putty
   Gpio Ledorange(GPIOD,GPIO_PIN_13,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
   Gpio Ledred(GPIOD,GPIO_PIN_14,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
   Gpio Ledblue(GPIOD,GPIO_PIN_15,GPIO_MODE_OUTPUT_PP,0,GPIO_SPEED_FAST,GPIO_NOPULL);
-
   interruption SuperIT;
   //Usart Usart6(USART6,(uint32_t) 9600,USART_LASTBIT_DISABLE,USART_PHASE_1EDGE,USART_POLARITY_LOW,USART_MODE_TX_RX,USART_PARITY_NONE, USART_STOPBITS_1, USART_WORDLENGTH_8B);
   Uart Uart4(UART4,(uint32_t) 9600,UART_MODE_TX_RX,UART_PARITY_NONE, UART_STOPBITS_1, UART_WORDLENGTH_8B,UART_HWCONTROL_NONE,UART_OVERSAMPLING_8);
@@ -106,26 +106,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UsartHandle)
 
 
 
-void StartFirstTask(void const * argument)
-{
-	while(1)
-	{
-		Ledred.Toggle();
-		Ledblue.Toggle();
-		osDelay(1000);
-	}
-}
-
-
-void StartSecondTask(void const * argument)
-{
-	while(1)
-	{
-		Ledorange.Toggle();
-		Ledgreen.Toggle();
-		osDelay(2000);
-	}
-}
 
 
 int main(int argc, char* argv[])
@@ -178,8 +158,8 @@ int main(int argc, char* argv[])
 
   // Perform all necessary initialisations
   Ledgreen.Init();
-  Ledblue.Init();
-  Ledred.Init();
+ // Ledblue.Init();
+  //Ledred.Init();
   Ledorange.Init();
 
   Uart4.Init();
@@ -189,10 +169,8 @@ int main(int argc, char* argv[])
   Uart4.InitInteruption(&SuperIT,UART4_IRQn,0,1);
   Uart4.ActiveInteruption(ENABLE);
 
-  Ledred.WriteBit(GPIO_PIN_RESET);
   Ledorange.WriteBit(GPIO_PIN_SET);
   Ledgreen.WriteBit(GPIO_PIN_RESET);
-  Ledblue.WriteBit(GPIO_PIN_RESET);
 
 
   uint32_t seconds = 0;
@@ -211,11 +189,11 @@ int main(int argc, char* argv[])
 
    /* Create the thread(s) */
    /* definition and creation of defaultTask */
-  osThreadDef(firstTask, StartFirstTask, osPriorityNormal, 1, 128);
-  firstTaskHandle = osThreadCreate(osThread(firstTask), NULL);
+//  osThreadDef(firstTask, StartFirstTask, osPriorityNormal, 1, 128);
+//  firstTaskHandle = osThreadCreate(osThread(firstTask), NULL);
 
-  osThreadDef(secondTask, StartSecondTask, osPriorityNormal, 1, 128);
-  secondTaskHandle = osThreadCreate(osThread(secondTask), NULL);
+//  osThreadDef(secondTask, StartSecondTask, osPriorityNormal, 1, 128);
+ // secondTaskHandle = osThreadCreate(osThread(secondTask), NULL);
 
    /* USER CODE BEGIN RTOS_THREADS */
    /* add threads, ... */
@@ -224,6 +202,13 @@ int main(int argc, char* argv[])
    /* USER CODE BEGIN RTOS_QUEUES */
    /* add queues, ... */
    /* USER CODE END RTOS_QUEUES */
+
+
+  ToggleLed TaskLedRedBlue("RED_BLUE");
+  ToggleLed TaskLedGreenOrange("GREEN_ORANGE");
+
+  TaskLedRedBlue.Init(&Ledred,&Ledblue,1000);
+  TaskLedGreenOrange.Init(&Ledgreen,&Ledorange,2000);
 
 
    /* Start scheduler */
@@ -263,61 +248,15 @@ extern "C"
 
 	}
 
-
-
-void Sort_Signed(int16_t A[], uint8_t L)
-{
-  uint8_t i = 0;
-  uint8_t status = 1;
-
-  while(status == 1)
-  {
-    status = 0;
-    for(i = 0; i < L-1; i++)
-    {
-      if (A[i] > A[i+1])
-      {
-        A[i]^=A[i+1];
-        A[i+1]^=A[i];
-        A[i]^=A[i+1];
-        status = 1;
-      }
-    }
-  }
 }
 
 
 
-float gToDegrees(float Vi, float Hi)               // refer to the orientation pic above
-{
-	float retval;
-    float orientation;
-
-  if (Hi == 0.0f) Hi = 0.001f;                         // preventing division by zero
-  if (Vi == 0.0f) Vi = 0.001f;                         // preventing division by zero
-
-  if ((Hi > 0.0f) && (Vi > 0.0f)) orientation = 0.0f;
-  if ((Hi < 0.0f) && (Vi > 0.0f)) orientation = 90.0f;
-  if ((Hi < 0.0f) && (Vi < 0.0f)) orientation = 180.0f;
-  if ((Hi > 0.0f) && (Vi < 0.0f)) orientation = 270.0f;
-
-  retval = ((atanf(Vi/Hi)/3.14159f)*180.0f);
-  if (retval < 0) retval += 90.0f;
-  retval = fabsf(retval) +  orientation;
-  return retval;
-}
-
-}
 
 void SysTick_Handler(void)
 {
-  /* USER CODE BEGIN SysTick_IRQn 0 */
-
-  /* USER CODE END SysTick_IRQn 0 */
   osSystickHandler();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
 
-  /* USER CODE END SysTick_IRQn 1 */
 }
 
 

@@ -5,7 +5,7 @@
 
 
 #include "objet.h"
-
+#include "stm32f4xx_hal.h"
 class Gpio : public objet
 {
 public:

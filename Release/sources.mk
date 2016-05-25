@@ -37,6 +37,7 @@ system/include/cmsis \
 src/math \
 src \
 src/Robot \
+src/Middleware \
 src/Driver \
 FreeRTOS/Source \
 FreeRTOS/Source/portable/MemMang \
